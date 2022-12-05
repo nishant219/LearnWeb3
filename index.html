@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Read-&-Write_Dapp</title>
+
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      div {
+        width: 20%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+        margin: 10px 0px 5px 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Dapp to set and get mood</h1>
+    <label for="mood"> Input mood: </label>
+    <input type="text" id="mood" />
+    <div>
+      <button onclick="getMood">GET Mood</button>
+    </div>
+    <div>
+      <button onclick="setMood">SET Mood</button>
+    </div>
+  </body>
+
+  <script
+  src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+  type="application/javascript"
+></script>
+
+<script>
+
+  // window.ethereum.enable();  //checks browser have any wallet or ethreum stuff //it is deprecated now
+
+  // var provider=new ethers.providers.Web3Provider(  //instance Web3Provider from provider fun
+  //   web3.currentProvider, //metamask
+  //   "goerli"
+  // );
+
+  const provider = new ethers.providers.Web3Provider(
+      window.ethereum,
+      "goerli"
+    );
+
+  const MoodContractAddress = "0x6210Eb07e38A7553A49ACCcB4b1935032Cb8633a";
+
+  const MoodContractABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_mood",
+				"type": "string"
+			}
+		],
+		"name": "setMood",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getMood",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+  
+  let MoodContract;
+  let signer;
+
+  provider.send("eth_requestAccounts", []).then(() => {
+      provider.listAccounts().then(function (accounts) { //fetch all accounts related to metamask/provider
+        signer = provider.getSigner(accounts[0]); //to tell who gonna sign/own contract (grab 1st acc)
+      
+        MoodContract = new ethers.Contract( //create instance of contract
+          MoodContractAddress,
+          MoodContractABI,
+          signer
+        );
+
+      });
+    });
+
+    //as we have created "MoodContract" instance we can access it further easily
+    async function getMood() {
+      const getMoodPromise = MoodContract.getMood();
+      const Mood = await getMoodPromise;
+      console.log(Mood);
+    }
+
+    async function setMood() {
+      const mood = document.getElementById("mood").value;
+      const setMoodPromise = MoodContract.setMood(mood);
+      await setMoodPromise;
+    }
+
+
+</script>
+
+</html>
